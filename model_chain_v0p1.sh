@@ -13,9 +13,9 @@ yEnd_mhm=31
 
 
 # Directories
-edk_dir="~/sawam/apps/edk_nc/post_proc/"
-mhm_dir="~/sawam/apps/mhm/setup"
-smi_dir="~/sawam/apps/smi/"
+edk_dir="./apps/edk/"
+mhm_dir="./apps/mhm/"
+smi_dir="./apps/smi/"
 
 
 
@@ -27,8 +27,8 @@ cd $edk_dir
 
 cd ./pre/
 sed -i -e  "'/yEnd/c yEnd=${yEnd_edk}'" edk.nml
-sed -i -e  '/mEnd/c mEnd=${mEnd_edk}' edk.nml
-sed -i -e  '/dEnd/c dEnd=${dEnd_edk}' edk.nml
+sed -i -e  "'/mEnd/c mEnd=${mEnd_edk}'" edk.nml
+sed -i -e  "'/dEnd/c dEnd=${dEnd_edk}'" edk.nml
 ./edk
 cdo -f nc4c -z zip_4 copy pre.nc pre_small.nc
 
