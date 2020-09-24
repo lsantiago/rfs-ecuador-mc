@@ -158,10 +158,13 @@
 #	 decides whether to run the rest of the script
 
 # Get issue year and month from system clock
-issueyear=$(date +'%Y')		# 4 digit year
-issuemonth=$(date +'%m')	# 2 digit month
-issueday=$(date +'%d')		# 2 digit day
+#issueyear=$(date +'%Y')		# 4 digit year
+#issuemonth=$(date +'%m')	# 2 digit month
+#issueday=$(date +'%d')		# 2 digit day
 
+issueyear=2018         # 4 digit year                                      │
+issuemonth=12        # 2 digit month                                     │
+issueday=31          # 2 digit day
 
 #---------------
 # Initialize
@@ -184,6 +187,10 @@ edk_dir="./apps/edk/"
 mhm_dir="./apps/mhm/"
 smi_dir="./apps/smi/"
 
+projpath="/home/utpl/rfs-ecuador-mc"
+edkexefile=$projpath"/templates/catamayo_chira/executables/edk/edk"
+namelist_dir=$projpath"/templates/catamayo_chira/namelists"
+
 
 #=======================================================================
 # 1 EDK
@@ -192,38 +199,42 @@ smi_dir="./apps/smi/"
 # Step 1.1:     Update metereological input file
 
 # Step 1.2:     Update processing period and get pre.nc
-cd $edk_dir
+##========= Variable vectors ================
+typemeteo=("tavg") #("pre" "tmin" "tmax" "tavg")
 
-cd ./pre/
-sed -i -e  "'/yEnd/c yEnd=${issueyear}'" edk.nml
-sed -i -e  "'/mEnd/c mEnd=${issuemonth}'" edk.nml
-sed -i -e  "'/dEnd/c dEnd=${issueday}'" edk.nml
-./edk
-cdo -f nc4c -z zip_4 copy pre.nc pre_small.nc
 
-# Step 1.3:     Update processing period and get tmin.nc
-cd  ../tmin
-sed -i -e  "'/yEnd/c yEnd=${issueyear}'" edk.nml
-sed -i -e  "'/mEnd/c mEnd=${issuemonth}'" edk.nml
-sed -i -e  "'/dEnd/c dEnd=${issueday}'" edk.nml
-./edk
-cdo -f nc4c -z zip_4 copy tmin.nc tmin_small.nc
+echo "================================================"
+echo "issue:   " $issueyear $issuemonth $issueday
+echo "================================================"
 
-# Step 1.4:     Update processing period and get tmax.nc
-cd  ../tmax/
-sed -i -e  "'/yEnd/c yEnd=${issueyear}'" edk.nml
-sed -i -e  "'/mEnd/c mEnd=${issuemonth}'" edk.nml
-sed -i -e  "'/dEnd/c dEnd=${issueday}'" edk.nml
-./edk
-cdo -f ncd4c -z zip_4 copy tmax.nc tmax_small.nc
+# Step 1.2:     Update processing period and get pre.nc
 
-# Step 1.5:     Update processing period and get pre.nc
-cd  cd ../tavg/
-sed -i -e  "'/yEnd/c yEnd=${issueyear}'" edk.nml
-sed -i -e  "'/mEnd/c mEnd=${issuemonth}'" edk.nml
-sed -i -e  "'/dEnd/c dEnd=${issueday}'" edk.nml
-./edk
-cdo -f ncd4c -z zip_4 copy tavg.nc tavg_small.nc
+ctrlfolder_edk=$projpath/execute_edk/catamayo_chira/2011-01-01/control/
+    
+# Create symbolic link to edk executable
+if [ -f $ctrlfolder_edk/edk ]; then
+    rm $ctrlfolder_edk/edk # remove any pre-exisintg links
+fi
+ln -s $edkexefile $ctrlfolder_edk
+
+# Get output by type meteorology
+for itypemeteo in "${!typemeteo[@]}" ; do
+    echo "Work with.. " ${typemeteo[itypemeteo]}
+    
+    # Copy template edk to control folder
+    cp $namelist_dir/edk_${typemeteo[itypemeteo]}.nml $ctrlfolder_edk/edk.nml
+    
+    # Update configuration edk nml
+    cd $ctrlfolder_edk/
+    sed -i -e  "/yEnd/c yEnd=$issueyear" edk.nml
+    sed -i -e  "/mEnd/c mEnd=$issuemonth" edk.nml
+    sed -i -e  "/dEnd/c dEnd=$issueday" edk.nml
+    
+    #time ./edk > ./runlog.txt
+    #./edk
+
+    #cdo -f nc4c -z zip_4 copy ../output/${typemeteo[itypemeteo]}.nc ../output/${typemeteo[itypemeteo]}_small.nc
+done
 
 
 

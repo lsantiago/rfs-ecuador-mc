@@ -1,0 +1,105 @@
+!EDK-Grid***Main configuration file for Precipitation for GER***
+&mainVars ! namelist mainpaths
+! -------------------------------------------------------------------
+! ----------------- INPUT SPECIFICATIONS ----------------------------
+!
+! DataPathIn contains the path to the meteorological input files
+! it can be a netcdf file, then a 3-dim field is expected and
+! further coordinate and variable names are expected
+DataPathIn               = "/home/utpl/sawam/data/era5/add-dem-tmin/tmin.nc"
+!
+! value in the meteorological input files that is used as missing value
+noDataValue              = -9999
+! Specifications of variable and coordinate names in case DataPathIn
+! is a netcdf file
+ncIn_variable_name       = "tmin"
+ncIn_dem_variable_name   = "dem_0p1"
+! name of coordinates, these must be in [m]
+ncIn_yCoord_name         = "northing"
+ncIn_xCoord_name         = "easting"
+!
+! Correct interpolated negative values to zero 
+! (set for precipitation to true !)
+correctNeg               = .True.
+!
+! Set values further away than the distance threshold to zero
+distZero                 = .True.
+!
+fNameDEM                  = "/home/utpl/sawam/data/era5/add-dem/add-latlong/with_fix_name/dem_0p01.nc"
+! with netcdf dem cellFator is 1
+cellFactor               = 1
+! name of coordinates (northing and easting) in [m]
+ncOut_dem_yCoord_name    = "northing"
+ncOut_dem_xCoord_name	 = "easting"
+! name of coordinates (latitude and longitude) in deg
+ncOut_dem_Latitude	 = "lat"
+ncOut_dem_Longitude	 = "lon"
+! name of the DEM variable in the netcdf file
+ncOut_dem_variable_name  = "dem_0p01"
+
+!
+DataPathOut              = "../output/"
+FileOut                  = "tmin.nc"
+!
+! Name of Look Up Table of Station data
+fNameSTA                 = "/home/utpl/sawam/apps/edk_nc/check/pre_data/Stations_in_study_domain.txt"
+
+! The value that should be multiplied to the data in the netcdf file 
+DataConvertFactor        = 1
+! The value that should be added to the data in the netcdf file 
+!OffSet			 = 0
+OffSet			 = -273.16
+![FINAL VALUE = NETCDF VALUE * DataConvertFactor + OffSet]
+
+!
+! -------------------------------------------------------------------
+! ------------ PROCESSING PERIOD ------------------------------------ 
+yStart                   = 1980
+mStart                   = 1
+dStart                   = 1
+yEnd                     = 2018
+!yEnd                     = 1990
+mEnd                     = 12 
+dEnd                     = 31
+! Number of Time Buffering Days (Divides the EDK processing into chunks accross the time dimension) 
+tBuffer                  = 300
+!
+! -------------------------------------------------------------------
+! ------------ INTERPOLATION METHOD ---------------------------------
+!
+! InterMth = 2 -> EDK
+! InterMth = 1 -> OK
+! InterMth = 0 -> No interpolation
+InterMth                 = 2
+! maximum search distance for interpolation [m]
+maxDist                  = 65000
+!
+! -------------------------------------------------------------------
+! ----------------- VARIOGRAM ESTIMATION ----------------------------
+flagVario                = .False.
+!
+! number of variogram parameters
+nParam                   = 3
+! type of theoretical variogramm (1=spherical, 2 = exponential)
+vType                    = 2
+!
+! file name where to store the variogram parameters 
+! (if flagVario is false, variogram parameters )
+! (for interpolation are read in here:         )
+fNameVario               = "/home/utpl/rfs-ecuador-mc/templates/catamayo_chira/variogram_parameters/var_param_tmin.txt"
+!fNameVario               = "./output/varFit.txt"
+dh=3.5e3
+hMax=200e3
+! -------------------------------------------------------------------
+! --------------- NC OUTPUT SPECIFICATION ----------------------------
+author_name              = 'Santiago Quinones'
+projection_name          = 'EPSG:31468 '
+invert_y                 = .True. ! (set True if working with mHM input data!)
+variable_name            = 'tmin'
+variable_unit            = 'degrees'
+variable_long_name       = 'Temperature min'
+variable_standard_name	 = 'temperature_min_flux'
+variable_calendar_type	 = 'proleptic_gregorian'
+! -------------------------------------------------------------------
+! -------------------------------------------------------------------
+/ !END*******Main Config***********

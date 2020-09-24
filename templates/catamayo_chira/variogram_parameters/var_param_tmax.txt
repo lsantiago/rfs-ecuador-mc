@@ -1,0 +1,2 @@
+      nugget        sill       range  Type    Easting   Northing     BIAS     RMSE        r
+  0.1457E-01  0.2367E+01  0.4023E+06     2        0.0        0.0  -0.0138   0.0027   0.9831
