@@ -191,6 +191,9 @@ projpath="/home/utpl/rfs-ecuador-mc"
 edkexefile=$projpath"/templates/catamayo_chira/executables/edk/edk"
 namelist_dir=$projpath"/templates/catamayo_chira/namelists"
 
+mhmexefile=$projpath"/templates/catamayo_chira/executables/mhm/mhm"
+
+
 
 #=======================================================================
 # 1 EDK
@@ -200,7 +203,7 @@ namelist_dir=$projpath"/templates/catamayo_chira/namelists"
 
 # Step 1.2:     Update processing period and get pre.nc
 ##========= Variable vectors ================
-typemeteo=("tavg") #("pre" "tmin" "tmax" "tavg")
+typemeteo=("pre" "tmin" "tmax" "tavg")
 
 
 echo "================================================"
@@ -208,7 +211,7 @@ echo "issue:   " $issueyear $issuemonth $issueday
 echo "================================================"
 
 # Step 1.2:     Update processing period and get pre.nc
-
+# TODO: Create dinamic folder with date
 ctrlfolder_edk=$projpath/execute_edk/catamayo_chira/2011-01-01/control/
     
 # Create symbolic link to edk executable
@@ -236,41 +239,61 @@ for itypemeteo in "${!typemeteo[@]}" ; do
     #cdo -f nc4c -z zip_4 copy ../output/${typemeteo[itypemeteo]}.nc ../output/${typemeteo[itypemeteo]}_small.nc
 done
 
-
+exit
 
 #=======================================================================
 # 2 MHM
 #=======================================================================
-cd  $mhm_dir
 
 # Step 2.1:     UPDATE RESTART
-# + Step 2.1.1: Link files nc metereological
-cd $mhm_dir/02_input/meteo
+edkoutdir=$projpath/execute_edk/catamayo_chira/2011-01-01/output
+mhminputdir=$projpath/setup_mhm/catamayo_chira/meteo
+#ctrlfolder_mhm=$projpath/execute_mhm/catamayo_chira/2011-01-01/control
+execute_mhm_dir=$projpath/execute_mhm/catamayo_chira/2011-01-01
 
-ln -s $edk_dir/pre/pre_small.nc pre.nc
-ln -s $edk_dir/tmin/tmin_small.nc tmin.nc
-ln -s $edk_dir/tmax/tmax_small.nc tmax.nc
-ln -s $edk_dir/tavg/tavg_small.nc tavg.nc
+# + Step 2.1.1: Link files nc metereological
+
+# TODO: Chech files febore to delete
+rm $mhminputdir/*.nc 
+
+ln -s $edkoutdir/pre_small.nc $mhminputdir/pre.nc
+ln -s $edkoutdir/tmin_small.nc $mhminputdir/tmin.nc
+ln -s $edkoutdir/tmax_small.nc $mhminputdir/tmax.nc
+ln -s $edkoutdir/tavg_small.nc $mhminputdir/tavg.nc
+
+# + Step 2.1.2: Copy templates
+cp $namelist_dir/m*.nml $execute_mhm_dir/control/
+
+
+# + Step 2.1.3: Create symbolic link to mhm executable
+if [ -f $execute_mhm_dir/control/mhm ]; then
+    rm $execute_mhm_dir/control/mhm # remove any pre-exisintg links
+fi
+ln -s $mhmexefile $execute_mhm_dir/control
+
 
 
 # + Step 2.1.2: Archive content t1 in t0
-mkdir $mhm_dir/03_output/restart/t0/$issueyear-$issuemonth-$issueday
-mv $mhm_dir/03_output/restart/t1/* $mhm_dir/03_output/restart/t0/$issueyear-$issuemonth-$issueday/
+#mkdir $mhm_dir/03_output/restart/t0/$issueyear-$issuemonth-$issueday
+#mv $mhm_dir/03_output/restart/t1/* $mhm_dir/03_output/restart/t0/$issueyear-$issuemonth-$issueday/
 
 # + Step 2.1.3: Move content restart t2 to t1
-mv $mhm_dir/03_output/restart/t2/* $mhm_dir/03_output/restart/t1/
+#mv $mhm_dir/03_output/restart/t2/* $mhm_dir/03_output/restart/t1/
 
 # + Step 2.2:   Update eval_Per in mhm.nml 
-cd $mhm_dir/01_control/
-sed -i -e  "'/yStart/c eval_Per(1)%yStart=${issueyear}'" mhm.nml
-sed -i -e  "'/mStart/c eval_Per(1)%mStart=${issuemonth}'" mhm.nml
-sed -i -e  "'/dStart/c eval_Per(1)%dStart=${issueday}'" mhm.nml
-sed -i -e  "'/yEnd/c eval_Per(1)%yEnd=${issueyear}'" mhm.nml
-sed -i -e  "'/mEnd/c eval_Per(1)%mEnd=${issuemonth}'" mhm.nml
-sed -i -e  "'/dEnd/c eval_Per(1)%dEnd=${issueday}'" mhm.nml
+#cd $mhm_dir/01_control/
+#sed -i -e  "'/yStart/c eval_Per(1)%yStart=${issueyear}'" mhm.nml
+#sed -i -e  "'/mStart/c eval_Per(1)%mStart=${issuemonth}'" mhm.nml
+#sed -i -e  "'/dStart/c eval_Per(1)%dStart=${issueday}'" mhm.nml
+#sed -i -e  "'/yEnd/c eval_Per(1)%yEnd=${issueyear}'" mhm.nml
+#sed -i -e  "'/mEnd/c eval_Per(1)%mEnd=${issuemonth}'" mhm.nml
+#sed -i -e  "'/dEnd/c eval_Per(1)%dEnd=${issueday}'" mhm.nml
 
 # + Step 2.2:   RUN MHM
-./mhm
+cd $execute_mhm_dir/control/
+#./mhm
+
+exit
 
 # Step 2.3:     RELOCATE OUTPUT
 mkdir $mhm_dir/03_output/$issueyear-$issuemonth-$issueday
