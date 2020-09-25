@@ -6,3 +6,11 @@ setup_mhm/catamayo_chira/*
 
 # ._ hidden files
 ._*
+
+# internal conf
+.vscode/*
+
+# execute files
+execute_mhm/*
+execute_edk/*
+execute_smi/*

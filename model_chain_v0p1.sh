@@ -205,6 +205,7 @@ edkexefile=$projpath"/templates/catamayo_chira/executables/edk/edk"
 namelist_dir=$projpath"/templates/catamayo_chira/namelists"
 
 mhmexefile=$projpath"/templates/catamayo_chira/executables/mhm/mhm"
+smiexefile=$projpath"/templates/catamayo_chira/executables/smi/smi"
 
 
 
@@ -281,7 +282,7 @@ rm $mhminputdir/*.nc
 #ln -s $edkoutdir/tmax_small.nc $mhminputdir/tmax.nc
 #ln -s $edkoutdir/tavg_small.nc $mhminputdir/tavg.nc
 
-# TODO: Delete, output edk 1980-2018
+# TODO: Delete, output edk 1980-2018. How to optimize when you have a daily data?
 era5demo=/home/utpl/sawam/apps/mhm/setup/02_input/meteo/ERA5_SD_EDK
 ln -s $era5demo"/pre_edk_1980to2018_small.nc" $mhminputdir"/pre.nc"
 ln -s $era5demo"/tmin_edk_1980to2018_small.nc" $mhminputdir"/tmin.nc"
@@ -312,11 +313,10 @@ sed -i -e  "/yEnd/c eval_Per(1)%yEnd=$issueyear" mhm.nml
 sed -i -e  "/mEnd/c eval_Per(1)%mEnd=$issuemonth" mhm.nml
 sed -i -e  "/dEnd/c eval_Per(1)%dEnd=$issueday" mhm.nml
 
-exit
+
 
 # + Step 2.3:   RUN MHM
 ./mhm
-
 
 
 #=======================================================================
@@ -324,7 +324,29 @@ exit
 #=======================================================================
 
 # Step 3.1: Run SMI
-cd $smi_dir
+# + Step 3.1.1: Create directories
+execute_smi_dir=$projpath/execute_smi/catamayo_chira/$issueyear-$issuemonth-$issueday
+if [ ! -d ${execute_smi_dir} ]; then
+	mkdir -p $execute_smi_dir"/control"
+	mkdir -p $execute_smi_dir"/output"
+fi
+
+# + Step 3.1.2: Copy templates
+cp $namelist_dir/main.dat $execute_smi_dir/control/
+cp $projpath/templates/catamayo_chira/smi_cdf/cdf_info_1981_2010.nc $execute_smi_dir/control/cdf_info.nc
+
+# + Step 3.1.3: Copy mHMH_fluxes output
+cp $execute_mhm_dir/output/mHM_Fluxes_States.nc $execute_smi_dir/control/
+
+# + Step 3.1.3: Create symbolic link to mhm executable
+if [ -f $execute_smi_dir/control/smi ]; then
+    rm $execute_smi_dir/control/smi # remove any pre-exisintg links
+fi
+ln -s $smiexefile $execute_smi_dir/control
+
+
+# + Step 3.1.4	: Run SMI
+cd $execute_smi_dir/control
 ./smi
 
 

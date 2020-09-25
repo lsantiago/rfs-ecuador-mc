@@ -14,7 +14,7 @@
  !soilmoist_file = "./check/input_era5_1981to2010/mHM_Fluxes_States_1982to2010.nc"
  
  ! Step 2: Test linebase
- soilmoist_file = "./check/input_era5_2011/mHM_Fluxes_States.nc"
+ soilmoist_file = "./mHM_Fluxes_States.nc"
 
  SM_vname       = "SM_Lall"
  !
