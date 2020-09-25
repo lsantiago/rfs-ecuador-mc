@@ -10,8 +10,11 @@ projpath="/home/utpl/rfs-ecuador-mc"
 edkexefile=$projpath"/templates/catamayo_chira/executables/edk/edk"
 namelist_dir=$projpath"/templates/catamayo_chira/namelists"
 
+mhmexefile=$projpath"/templates/catamayo_chira/executables/mhm/mhm"
+
+
 ##========= Variable vectors ================
-typemeteo=("tavg") #("pre" "tmin" "tmax" "tavg")
+typemeteo=("pre" "tmin" "tmax") # "tavg")
 
 
 echo "================================================"
@@ -43,7 +46,7 @@ for itypemeteo in "${!typemeteo[@]}" ; do
     #time ./edk > ./runlog.txt
     #./edk
 
-    cdo -f nc4c -z zip_4 copy ../output/${typemeteo[itypemeteo]}.nc ../output/${typemeteo[itypemeteo]}_small.nc
+    #cdo -f nc4c -z zip_4 copy ../output/${typemeteo[itypemeteo]}.nc ../output/${typemeteo[itypemeteo]}_small.nc
 done
 
 

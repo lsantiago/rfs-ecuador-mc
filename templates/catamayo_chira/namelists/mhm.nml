@@ -41,15 +41,15 @@
 !-----------------------------------------------------------------------------
 &project_description
 !> project name
-project_details="mHM test domain project"
+project_details="Seasonal Water Management (SaWaM) in semi arid regions"
 !> any specific description of simulation
-setup_description="model run for the Mosel domain, forced with the E-OBS meteorologic data"
+setup_description="model run for the chiracatamayo (ecuador) domain, forced with the ERA5_SD_EDK meteorologic data"
 !> e.g. hindcast simulation, seasonal forecast, climate projection
-simulation_type="historical simulation"
+simulation_type="baseline simulation"
 !> convention used for dataset
 Conventions="XXX"
 !> contact details, incl. PI name, modellers
-contact="mHM developers (email:mhm-developers@ufz.de)"
+contact="Pallav K Shrestha (pallav-kumar.shrestha@ufz.de)"
 !> developing institution, specific mHM revision, latest release version (automatically included)
 mHM_details="Helmholtz Center for Environmental Research - UFZ, Department Computational Hydrosystems, Stochastic Hydrology Group"
 !> some details on data/model run version (creation date is included automatically)
@@ -70,7 +70,7 @@ history="model run version 1"
 !> 0 -> regular   X & Y   coordinate system (e.g., GK-4 or Lambert equal area system)
 !> 1 -> regular lat & lon coordinate system
 !-----------------------------------------------------------------------------
-iFlag_cordinate_sys = 0
+iFlag_cordinate_sys = 1
 !-----------------------------------------------------------------------------
 !> Number of domains to be modeled.
 !> Number given here should correspond to one given in "gaugeinfo.txt" file.
@@ -78,21 +78,19 @@ iFlag_cordinate_sys = 0
 !> IF routing process is ON then give nDomains = 1, for this case, mHM will internally
 !> discard gauging station information.
 !-----------------------------------------------------------------------------
-nDomains             = 2
+nDomains             = 1
 !-----------------------------------------------------------------------------
 !> resolution of Level-1 hydrological simulations in mHM [m or degree] per domain
 !> NOTE: if iFlag_cordinate_sys = 0, then resolution_Hydrology is in [m]
 !>       if iFlag_cordinate_sys = 1, then resolution_Hydrology is in [degree-decimal]
 !-----------------------------------------------------------------------------
-resolution_Hydrology(1) = 24000
-resolution_Hydrology(2) = 24000
+resolution_Hydrology(1) = 0.01
 !----------------------------------------------------------------------------
 !> specify same index for domains to share L0_data to save memory
 !> the index must MONOTONICALLY increase. Index can be repeated. e.g., 1,1,2,2,3
 !> but not 1,2,1. The correct way should be: 1,1,2.
 !-----------------------------------------------------------------------------
 L0Domain(1) = 1
-L0Domain(2) = 2
 !-----------------------------------------------------------------------------
 !> flag for writing restart output
 !-----------------------------------------------------------------------------
@@ -108,7 +106,6 @@ write_restart = .TRUE.
 !> (5) et
 !> (6) et & tws
 read_opt_domain_data(1) = 0
-read_opt_domain_data(2) = 0
 /
 !******************************************************************************************
 ! main config for mHM and mRM (mHM and mRM-related)
@@ -119,9 +116,7 @@ read_opt_domain_data(2) = 0
 !-----------------------------------------------------------------------------
 !> Number in brackets indicates domain number.
 !> directory where restart input is located
-dir_RestartIn(1)     = "test_domain/restart/"
-!> directory where restart input is located
-dir_RestartIn(2)     = "test_domain_2/restart/"
+dir_RestartIn(1)     = "../restart/t1/"
 !-----------------------------------------------------------------------------
 !> resolution of Level-11 discharge routing [m or degree] per domain
 !> this  level-11 discharge routing resolution must be >= and multiple of the
@@ -129,8 +124,7 @@ dir_RestartIn(2)     = "test_domain_2/restart/"
 !> NOTE: if iFlag_cordinate_sys = 0, then resolution_Routing is in [m]
 !>       if iFlag_cordinate_sys = 1, then resolution_Routing is in [degree-decimal]
 !-----------------------------------------------------------------------------
-resolution_Routing(1) = 24000
-resolution_Routing(2) = 24000
+resolution_Routing(1) = 0.01
 !-----------------------------------------------------------------------------
 !> model run timestep [h] either 1 or 24
 !-----------------------------------------------------------------------------
@@ -138,7 +132,7 @@ timestep = 1
 !-----------------------------------------------------------------------------
 !> flags for reading restart output
 !-----------------------------------------------------------------------------
-read_restart  = .FALSE.
+read_restart  = .TRUE.
 !-----------------------------------------------------------------------------
 !> flag for optimization: .TRUE.: optimization
 !>                    or .FALSE.: no optimazition
@@ -193,7 +187,7 @@ opti_method = 1
 !> (31) SO: Q: 1  - weighted NSE (NSE is weighted with observed discharge)
 
 !> further functions can be implemented in mo_objective_function and mo_mrm_objective_function
-opti_function = 10
+opti_function = 1
 /
 
 !******************************************************************************************
@@ -236,35 +230,23 @@ gw_coupling = .false.
 &directories_general
 !> all directories are common to all domains
 !> config run out file common to all modeled domains should be written to directory
-dirConfigOut = "test_domain/"
+dirConfigOut = "../output/"
 !
 !> directory where common input files should be located for all modeled domains
 !> (only for *_classdefinition files)
-dirCommonFiles = "test_domain/input/morph/"
+dirCommonFiles = "../../../../setup_mhm/catamayo_chira/morph/"
 !
 !**** for Domain 1
 !> directory where morphological files are located
-dir_Morpho(1)        = "test_domain/input/morph/"
+dir_Morpho(1)        = "../../../../setup_mhm/catamayo_chira/morph/"
 !> directory where land cover files are located
-dir_LCover(1)        = "test_domain/input/luse/"
+dir_LCover(1)        = "../../../../setup_mhm/catamayo_chira/morph/"
 !> directory where restart output should be written
-dir_RestartOut(1)    = "test_domain/restart/"
+dir_RestartOut(1)    = "../restart/t2/"
 !> directory where output should be written
-dir_Out(1)           = "test_domain/output_b1/"
+dir_Out(1)           = "../output/"
 !> file containing latitude and longitude on the resolution_Hydrology
-file_LatLon(1)       = "test_domain/input/latlon/latlon_1.nc"
-
-! **** for Domain 2
-!> directory where morphological files are located
-dir_Morpho(2)        = "test_domain_2/input/morph/"
-!> directory where land cover files are located
-dir_LCover(2)        = "test_domain_2/input/luse/"
-!> directory where restart output should be written
-dir_RestartOut(2)    = "test_domain_2/restart/"
-!> directory where output should be written
-dir_Out(2)           = "test_domain_2/output/"
-!> file containing latitude and longitude on the resolution_Hydrology
-file_LatLon(2)       = "test_domain_2/input/latlon/latlon.nc"
+file_LatLon(1)       = "../../../../setup_mhm/catamayo_chira/latlon/latlon_0p01.nc"
 /
 !******************************************************************************************
 ! directories (mHM-related)
@@ -281,8 +263,8 @@ inputFormat_meteo_forcings = "nc"
 !
 !**** for Domain 1
 !> directory where meteorological input is located
-dir_Precipitation(1) = "test_domain/input/meteo/pre/"
-dir_Temperature(1)   = "test_domain/input/meteo/tavg/"
+dir_Precipitation(1) = "../../../../setup_mhm/catamayo_chira/meteo/"
+dir_Temperature(1)   = "../../../../setup_mhm/catamayo_chira/meteo/"
 !> paths depending on PET process (processCase(5))
 !>  -1 - PET is input, LAI driven correction
 !>   0 - PET is input, aspect driven correction
@@ -290,36 +272,15 @@ dir_Temperature(1)   = "test_domain/input/meteo/tavg/"
 !>   2 - Priestley-Taylor mehtod
 !>   3 - Penman-Monteith method
 !> if processCase(5) == 0  input directory of pet has to be specified
-dir_ReferenceET(1)     = "test_domain/input/meteo/pet/"
+! dir_ReferenceET(1)     = "../../../../setup_mhm/catamayo_chira/meteo/"
 !> if processCase(5) == 1  input directory of minimum and maximum temperature has to be specified
-dir_MinTemperature(1)  = "test_domain/input/meteo/"
-dir_MaxTemperature(1)  = "test_domain/input/meteo/"
+dir_MinTemperature(1)  = "../../../../setup_mhm/catamayo_chira/meteo/"
+dir_MaxTemperature(1)  = "../../../../setup_mhm/catamayo_chira/meteo/"
 !> if processCase(5) == 2  input directory of minimum and maximum temperature has to be specified
-dir_NetRadiation(1)    = "test_domain/input/meteo/"
+! dir_NetRadiation(1)    = "../../../../setup_mhm/catamayo_chira/meteo/"
 !> if processCase(5) == 3  input directory of absolute vapour pressure (eabs) and windspeed has to be specified
-dir_absVapPressure(1)  = "test_domain/input/meteo/"
-dir_windspeed(1)       = "test_domain/input/meteo/"
-!
-!**** for Domain 2
-!> directory where meteorological input is located
-dir_Precipitation(2) = "test_domain_2/input/meteo/pre/"
-dir_Temperature(2)   = "test_domain_2/input/meteo/tavg/"
-!> paths depending on PET process (processCase(5))
-!>  -1 - PET is input, LAI driven correction
-!>   0 - PET is input, aspect driven correction
-!>   1 - Hargreaves-Sammani method
-!>   2 - Priestley-Taylor mehtod
-!>   3 - Penman-Monteith method
-!>   if processCase(5) == 0  input directory of pet has to be specified
-dir_ReferenceET(2)     = "test_domain_2/input/meteo/pet/"
-!> if processCase(5) == 1  input directory of minimum and maximum temperature has to be specified
-dir_MinTemperature(2)  = "test_domain_2/input/meteo/"
-dir_MaxTemperature(2)  = "test_domain_2/input/meteo/"
-!> if processCase(5) == 2  input directory of minimum and maximum temperature has to be specified
-dir_NetRadiation(2)    = "test_domain_2/input/meteo/"
-!> if processCase(5) == 3  input directory of absolute vapour pressure (eabs) and windspeed has to be specified
-dir_absVapPressure(2)  = "test_domain_2/input/meteo/"
-dir_windspeed(2)       = "test_domain_2/input/meteo/"
+! dir_absVapPressure(1)  = "../../../../setup_mhm/catamayo_chira/meteo/"
+! dir_windspeed(1)       = "../../../../setup_mhm/catamayo_chira/meteo/"
 !> switch to control read input frequency of the gridded meteo input,
 !> i.e. precipitation, potential evapotransiration, and temperature
 !>      >0: after each <timeStep_model_inputs> days
@@ -330,7 +291,6 @@ dir_windspeed(2)       = "test_domain_2/input/meteo/"
 !> if timestep_model_inputs is non-zero, than it has to be non-zero
 !> for all domains
 time_step_model_inputs(1) = 0
-time_step_model_inputs(2) = 0
 /
 !******************************************************************************************
 ! directories (mRM-related)
@@ -342,14 +302,11 @@ time_step_model_inputs(2) = 0
 !-----------------------------------------------------
 !
 !> directory where discharge files are located
-dir_Gauges(1)        = "test_domain/input/gauge/"
-dir_Gauges(2)        = "test_domain_2/input/gauge/"
+dir_Gauges(1)        = "../../../../setup_mhm/catamayo_chira/gauge/"
 !> directory where simulated runoff can be found (only required if coupling mode equals 0)
-dir_Total_Runoff(1) = 'test_domain/output_b1/'
-dir_Total_Runoff(2) = 'test_domain_2/output/'
+! dir_Total_Runoff(1) = '../../../../setup_mhm/catamayo_chira/'
 !> directory where runoff at bankfull conditions can be found (only for coupling to groundwater model)
-dir_Bankfull_Runoff(1) = 'test_domain/input/optional_data/'
-dir_Bankfull_Runoff(2) = 'test_domain_2/input/optional_data/'
+! dir_Bankfull_Runoff(1) = '../../../../setup_mhm/catamayo_chira/optional_data/'
 /
 
 !******************************************************************************************
@@ -365,45 +322,45 @@ dir_Bankfull_Runoff(2) = 'test_domain_2/input/optional_data/'
 !
 !> directory to soil moisture data
 ! expected file name: sm.nc, expected variable name: sm
-dir_soil_moisture(1)   = "test_domain/input/optional_data/"
+! dir_soil_moisture(1)   = "../../../../setup_mhm/catamayo_chira/optional_data/"
 !> number of mHM soil layers (nSoilHorizons_mHM) which the soil moisture
 !> input is representative for (counted top to down)
-nSoilHorizons_sm_input = 1
+! nSoilHorizons_sm_input = 1
 !> time stepping of the soil moisture input
 !>     -1: daily   SM values
 !>     -2: monthly SM values
 !>     -3: yearly  SM values
 !-----------------------------
-timeStep_sm_input = -2
+! timeStep_sm_input = -2
 !
 !> directory to neutron data
 ! expected file name: neutrons.nc, expected variable name: neutrons
-dir_neutrons(1)        = "test_domain/input/optional_data/"
+! dir_neutrons(1)        = "../../../../setup_mhm/catamayo_chira/optional_data/"
 
 !> evapotranspiration data
 !
 !> directory to evapotranspiration data
 ! expected file name: et.nc, expected variable name: et
-dir_evapotranspiration(1)   = "test_domain/input/optional_data/"
+! dir_evapotranspiration(1)   = "../../../../setup_mhm/catamayo_chira/optional_data/"
 
 !> time stepping of the et input
 !>     -1: daily   ET values
 !>     -2: monthly ET values
 !>     -3: yearly  ET values
 !-----------------------------
-timeStep_et_input = -2
+! timeStep_et_input = -2
 
 !> domain average total water storage (tws)
 !> file name including path with timeseries of GRACE-based data
 ! expected file name: twsa.nc, expected variable name: twsa
-dir_tws(1)   = "test_domain/input/optional_data/"
+! dir_tws(1)   = "../../../../setup_mhm/catamayo_chira/optional_data/"
 
 !> time stepping of the tws input
 !>     -1: daily   TWS values
 !>     -2: monthly TWS values
 !>     -3: yearly  TWS values
 !-----------------------------
-timeStep_tws_input = -2
+! timeStep_tws_input = -2
 /
 
 !******************************************************************************************
@@ -435,7 +392,7 @@ processCase(4) = 1
 !>   1 - Hargreaves-Sammani method
 !>   2 - Priestley-Taylor mehtod
 !>   3 - Penman-Monteith method
-processCase(5) = 0
+processCase(5) = 1
 !> interflow
 !> 1 - storage reservoir with one outflow threshold and nonlinear response
 processCase(6) = 1
@@ -447,7 +404,7 @@ processCase(7) = 1
 !> 1 - Muskingum approach
 !> 2 - adaptive timestep, constant celerity
 !> 3 - adaptive timestep, spatially varying celerity
-processCase(8) = 3
+processCase(8) = 2
 !> baseflow
 !> 1 - recession parameters (not regionalized yet)
 processCase(9) = 1
@@ -469,22 +426,15 @@ processCase(10) = 0
 !> The land cover scene periods are shared by all catchments.
 !> The names should be equal for all domains. The land cover scnes have to be ordered
 !> chronologically.
-nLCoverScene = 2
+nLCoverScene = 1
 ! indicate period with brackets behind variable
 ! first scene
 !> starting year of land cover scene 1
-LCoverYearStart(1) = 1981
+LCoverYearStart(1) = 1900
 !> ending year of land cover scnene 1
-LCoverYearEnd(1)   = 1990
+LCoverYearEnd(1)   = 2100
 !> name of land cover file for scnene 1
-LCoverfName(1)     = 'lc_1981.asc'
-
-!> starting year of land cover scene 2
-LCoverYearStart(2) = 1991
-!> ending year of land cover scnene 2
-LCoverYearEnd(2)   = 2000
-!> name of land cover file for scnene 2
-LCoverfName(2)     = 'lc_1991.asc'
+LCoverfName(1)     = 'lc.asc'
 /
 
 !******************************************************************************************
@@ -508,25 +458,18 @@ LCoverfName(2)     = 'lc_1991.asc'
 !>    the effective modeling period of 2001/01/01 to 2003/12/31.
 !-----------------------------------------------------------------------------
 warming_Days(1)    = 0
-warming_Days(2)    = 180
 !> first year of wanted simulation period
-eval_Per(1)%yStart = 1990
-eval_Per(2)%yStart = 1993
+eval_Per(1)%yStart = 2011
 !> first month of wanted simulation period
 eval_Per(1)%mStart = 01
-eval_Per(2)%mStart = 01
 !> first day   of wanted simulation period
 eval_Per(1)%dStart = 01
-eval_Per(2)%dStart = 01
 !> last year   of wanted simulation period
-eval_Per(1)%yEnd   = 1993
-eval_Per(2)%yEnd   = 1993
+eval_Per(1)%yEnd   = 2011
 !> last month  of wanted simulation period
-eval_Per(1)%mEnd   = 12
-eval_Per(2)%mEnd   = 12
+eval_Per(1)%mEnd   = 01
 !> last day    of wanted simulation period
-eval_Per(1)%dEnd   = 31
-eval_Per(2)%dEnd   = 31
+eval_Per(1)%dEnd   = 01
 /
 
 !******************************************************************************************
@@ -586,13 +529,13 @@ eval_Per(2)%dEnd   = 31
 !>        To increase this number, edit the variable "maxNoSoilHorizons" in the "/src/mhm/mo_mhm_constants.f90" file
 !
 !----------------------------------------------------------------------------------------------------------
-iFlag_soilDB = 0
+iFlag_soilDB = 1
 !
 !> [mm] soil depth down to which organic matter is possible
-tillageDepth = 200
+tillageDepth = 300
 !
 !> No. of soil horizons to be modeled
-nSoilHorizons_mHM =2
+nSoilHorizons_mHM =6
 !
 ! soil depth information
 !> IF (iFlag_soilDB = 0)
@@ -602,7 +545,12 @@ nSoilHorizons_mHM =2
 !>    Also check your tillage layer depth. It should conform with one of the below specified soil_Depth.
 !
 !> Soil_Horizon   Depth[mm]      ! depth of soil horizons w.r.t. ground surface (positive downwards)
-soil_Depth(1) = 200
+soil_Depth(1) = 50
+soil_Depth(2) = 150
+soil_Depth(3) = 300
+soil_Depth(4) = 600
+soil_Depth(5) = 1000
+soil_Depth(6) = 2000
 /
 
 !******************************************************************************************
@@ -632,7 +580,7 @@ soil_Depth(1) = 200
 !>  1: read mean monthly gridded LAI values.
 !>     must be a separate *.nc file for every (modeled) domains.
 !-----------------------------------------------------------------------------------
-timeStep_LAI_input = 0
+timeStep_LAI_input = 1
 !> input file format of gridded file (if timeStep_LAI_input < 0)
 !>     nc  - assume one file with name lai.nc
 !> input file format of gridded file (if timeStep_LAI_input == 1)
@@ -655,9 +603,7 @@ fracSealed_cityArea = 0.6
 ! this is only needed for timeStep_LAI_input != 0
 &directories_MPR
 !> directory where gridded LAI files are located
-dir_gridded_LAI(1)   = "test_domain/input/lai/"
-!> directory where gridded LAI files are located
-dir_gridded_LAI(2)   = "test_domain/input/lai/"
+dir_gridded_LAI(1)   = "../../../../setup_mhm/catamayo_chira/lai/"
 /
 
 !******************************************************************************************
@@ -670,7 +616,8 @@ dir_gridded_LAI(2)   = "test_domain/input/lai/"
 !> Gauges for model evaluation
 !
 !> Total number of gauges (sum of all gauges in all subbains)
-nGaugesTotal = 2
+!GAUGEINFO
+nGaugesTotal = 1
 !> structure of gauge_id(i,j) & gauge_filename(i,j):
 !> 1st dimension is the number of the subdomain i
 !> 2nd dimension is the number of the gauge j within the subdomain i
@@ -680,17 +627,9 @@ nGaugesTotal = 2
 !> number of gauges for subdomain (1)
 NoGauges_domain(1)   = 1
 !> in subdomain(1), this is the id of gauge(1)  --> (1,1)
-Gauge_id(1,1)       = 398
+Gauge_id(1,1)       = 3947700
 !> name of file with timeseries for subdomain(1) at gauge(1) --> (1,1)
-gauge_filename(1,1) = "00398.txt"
-!
-!> domain 2
-!> number of gauges for subdomain (2)
-NoGauges_domain(2)       = 1
-!> in subdomain(2), this is the id of gauge(1) --> (2,1)
-Gauge_id(2,1)           = 45
-!> name of file with timeseries for subdomain(2) at gauge(1) --> (2,1)
-Gauge_filename(2,1)     = "45.txt"
+gauge_filename(1,1) = "3947700.txt"
 /
 
 &inflow_gauges
@@ -707,13 +646,13 @@ nInflowGaugesTotal = 0
 !
 !> domain 1
 !> number of gauges for subdomain (1)
-NoInflowGauges_domain(1)   = 0
+! NoInflowGauges_domain(1)   = 0
 !> id of inflow gauge(1) for subdomain(1) --> (1,1)
-InflowGauge_id(1,1)       = -9
+! InflowGauge_id(1,1)       = -9
 !> name of file with timeseries of inflow gauge(1) for subdomain(1) --> (1,1)
-InflowGauge_filename(1,1) = ""
+! InflowGauge_filename(1,1) = ""
 !> consider flows from upstream/headwater cells of inflow gauge(1) for subdomain(1) --> (1,1)
-InflowGauge_Headwater(1,1) = .FALSE.
+! InflowGauge_Headwater(1,1) = .FALSE.
 /
 
 !******************************************************************************************
@@ -753,7 +692,7 @@ fnight_temp  = -0.76,  -1.30,  -1.88,  -2.38, -2.72, -2.75, -2.74, -3.04, -2.44,
 !> General:
 !  -------------------------------------
 !> number of iteration steps by parameterset
-nIterations = 7
+nIterations = 2000
 !> seed of random number gemerator (default: -9)
 !> if default: seed is obtained from system clock
 seed = 1235876

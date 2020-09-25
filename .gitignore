@@ -1,1 +1,8 @@
+# files NETCDF
 *.nc
+
+# files of setup
+setup_mhm/catamayo_chira/*
+
+# ._ hidden files
+._*

@@ -162,9 +162,22 @@
 #issuemonth=$(date +'%m')	# 2 digit month
 #issueday=$(date +'%d')		# 2 digit day
 
-issueyear=2018         # 4 digit year                                      │
-issuemonth=12        # 2 digit month                                     │
-issueday=31          # 2 digit day
+# TODO: Delete, this is a example
+issueyear=2011         # 4 digit year                                      │
+issuemonth=01        # 2 digit month                                     │
+issueday=02          # 2 digit day
+
+# Yesteday date
+#yester_year=$(date --date="-1 day" +'%Y')
+#yester_month=$(date --date="-1 day" +'%m')
+#yester_day=$(date --date="-1 day" +'%d')
+
+# TODO: Delete, this is a example
+yester_year=2011
+yester_month=01
+yester_day=01
+
+
 
 #---------------
 # Initialize
@@ -239,27 +252,42 @@ for itypemeteo in "${!typemeteo[@]}" ; do
     #cdo -f nc4c -z zip_4 copy ../output/${typemeteo[itypemeteo]}.nc ../output/${typemeteo[itypemeteo]}_small.nc
 done
 
-exit
 
 #=======================================================================
 # 2 MHM
 #=======================================================================
 
 # Step 2.1:     UPDATE RESTART
-edkoutdir=$projpath/execute_edk/catamayo_chira/2011-01-01/output
-mhminputdir=$projpath/setup_mhm/catamayo_chira/meteo
-#ctrlfolder_mhm=$projpath/execute_mhm/catamayo_chira/2011-01-01/control
-execute_mhm_dir=$projpath/execute_mhm/catamayo_chira/2011-01-01
+edkoutdir=$projpath"/execute_edk/catamayo_chira/"$issueyear"-"$issuemonth"-"$issueday"/output"
+mhminputdir=$projpath"/setup_mhm/catamayo_chira/meteo"
+
+
+execute_mhm_dir=$projpath/execute_mhm/catamayo_chira/$issueyear-$issuemonth-$issueday
+if [ ! -d ${execute_mhm_dir} ]; then
+	mkdir -p $execute_mhm_dir"/control"
+	mkdir -p $execute_mhm_dir"/output"
+	mkdir -p $execute_mhm_dir"/restart/t1"
+	mkdir -p $execute_mhm_dir"/restart/t2"
+fi
+
 
 # + Step 2.1.1: Link files nc metereological
 
 # TODO: Chech files febore to delete
 rm $mhminputdir/*.nc 
 
-ln -s $edkoutdir/pre_small.nc $mhminputdir/pre.nc
-ln -s $edkoutdir/tmin_small.nc $mhminputdir/tmin.nc
-ln -s $edkoutdir/tmax_small.nc $mhminputdir/tmax.nc
-ln -s $edkoutdir/tavg_small.nc $mhminputdir/tavg.nc
+#ln -s $edkoutdir/pre_small.nc $mhminputdir/pre.nc
+#ln -s $edkoutdir/tmin_small.nc $mhminputdir/tmin.nc
+#ln -s $edkoutdir/tmax_small.nc $mhminputdir/tmax.nc
+#ln -s $edkoutdir/tavg_small.nc $mhminputdir/tavg.nc
+
+# TODO: Delete, output edk 1980-2018
+era5demo=/home/utpl/sawam/apps/mhm/setup/02_input/meteo/ERA5_SD_EDK
+ln -s $era5demo"/pre_edk_1980to2018_small.nc" $mhminputdir"/pre.nc"
+ln -s $era5demo"/tmin_edk_1980to2018_small.nc" $mhminputdir"/tmin.nc"
+ln -s $era5demo"/tmax_edk_1980to2018_small.nc" $mhminputdir"/tmax.nc"
+ln -s $era5demo"/tavg_edk_1980to2018_small.nc" $mhminputdir"/tavg.nc"
+
 
 # + Step 2.1.2: Copy templates
 cp $namelist_dir/m*.nml $execute_mhm_dir/control/
@@ -271,34 +299,23 @@ if [ -f $execute_mhm_dir/control/mhm ]; then
 fi
 ln -s $mhmexefile $execute_mhm_dir/control
 
-
-
-# + Step 2.1.2: Archive content t1 in t0
-#mkdir $mhm_dir/03_output/restart/t0/$issueyear-$issuemonth-$issueday
-#mv $mhm_dir/03_output/restart/t1/* $mhm_dir/03_output/restart/t0/$issueyear-$issuemonth-$issueday/
-
-# + Step 2.1.3: Move content restart t2 to t1
-#mv $mhm_dir/03_output/restart/t2/* $mhm_dir/03_output/restart/t1/
+# + Step 2.1.4: Move yesterday output
+mhm_out_yesterday=$projpath/execute_mhm/catamayo_chira/$yester_year-$yester_month-$yester_day
+cp $mhm_out_yesterday/restart/t2/*.nc $execute_mhm_dir/restart/t1/
 
 # + Step 2.2:   Update eval_Per in mhm.nml 
-#cd $mhm_dir/01_control/
-#sed -i -e  "'/yStart/c eval_Per(1)%yStart=${issueyear}'" mhm.nml
-#sed -i -e  "'/mStart/c eval_Per(1)%mStart=${issuemonth}'" mhm.nml
-#sed -i -e  "'/dStart/c eval_Per(1)%dStart=${issueday}'" mhm.nml
-#sed -i -e  "'/yEnd/c eval_Per(1)%yEnd=${issueyear}'" mhm.nml
-#sed -i -e  "'/mEnd/c eval_Per(1)%mEnd=${issuemonth}'" mhm.nml
-#sed -i -e  "'/dEnd/c eval_Per(1)%dEnd=${issueday}'" mhm.nml
-
-# + Step 2.2:   RUN MHM
 cd $execute_mhm_dir/control/
-#./mhm
+sed -i -e  "/yStart/c eval_Per(1)%yStart=$issueyear" mhm.nml
+sed -i -e  "/mStart/c eval_Per(1)%mStart=$issuemonth" mhm.nml
+sed -i -e  "/dStart/c eval_Per(1)%dStart=$issueday" mhm.nml
+sed -i -e  "/yEnd/c eval_Per(1)%yEnd=$issueyear" mhm.nml
+sed -i -e  "/mEnd/c eval_Per(1)%mEnd=$issuemonth" mhm.nml
+sed -i -e  "/dEnd/c eval_Per(1)%dEnd=$issueday" mhm.nml
 
 exit
 
-# Step 2.3:     RELOCATE OUTPUT
-mkdir $mhm_dir/03_output/$issueyear-$issuemonth-$issueday
-mv $mhm_dir/03_output/*.nc $mhm_dir/03_output/$issueyear-$issuemonth-$issueday/
-
+# + Step 2.3:   RUN MHM
+./mhm
 
 
 
