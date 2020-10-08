@@ -14,3 +14,13 @@ setup_mhm/catamayo_chira/*
 execute_mhm/*
 execute_edk/*
 execute_smi/*
+
+# download meteo
+download_meteo/*
+preprocess_meteo/*
+
+# temps
+temp/*
+
+# private vars
+private_vars_download.sh
