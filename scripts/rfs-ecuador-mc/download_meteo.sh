@@ -2,7 +2,7 @@
 # Purpose: 		Code to download meteo forcings from SaWaM THREDDS server
 # Date: 		February 2020
 # Developer: 	PK Shrestha
-# Project:		SaWaM Seasonal Forecasting System (sawamsfs)
+# Project:		Radar based Forecasting System for Ecuador - Model Chain (RFS-Ecuador-MC)
 #
 # Modifications:	1) xx xxxxx, DD month YYYY
 # #########################################################
