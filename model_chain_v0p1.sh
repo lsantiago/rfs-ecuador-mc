@@ -45,7 +45,8 @@
 # AUTHORS: 
 #
 #	Santiago Quiñones
-#						University of Loja
+#						University Tecnica Particular de Loja
+#						Water Resources Section
 #						Ecuador	
 #
 #	Pallav Kumar Shrestha
@@ -183,23 +184,7 @@ yester_day=01
 # Initialize
 #---------------
 
-# Vars
-# yEnd_edk=2018
-# mEnd_edk=11
-# dEnd_edk=02
-# yStart_mhm=2012
-# mStart_mhm=01
-# dStart_mhm=01
-# yEnd_mhm=2012
-# mEnd_mhm=12
-# yEnd_mhm=31
-
-
 # Directories
-edk_dir="./apps/edk/"
-mhm_dir="./apps/mhm/"
-smi_dir="./apps/smi/"
-
 projpath="/home/utpl/rfs-ecuador-mc"
 edkexefile=$projpath"/templates/catamayo_chira/executables/edk/edk"
 namelist_dir=$projpath"/templates/catamayo_chira/namelists"
@@ -225,8 +210,11 @@ echo "issue:   " $issueyear $issuemonth $issueday
 echo "================================================"
 
 # Step 1.2:     Update processing period and get pre.nc
-# TODO: Create dinamic folder with date
-ctrlfolder_edk=$projpath/execute_edk/catamayo_chira/2011-01-01/control/
+# Create dinamic folder to control edk
+ctrlfolder_edk=$projpath/execute_edk/catamayo_chira/$issueyear-$issuemonth-$issueday/control/
+if [ ! -d ${ctrlfolder_edk} ]; then
+	mkdir -p $ctrlfolder_edk
+fi
     
 # Create symbolic link to edk executable
 if [ -f $ctrlfolder_edk/edk ]; then
@@ -274,7 +262,7 @@ fi
 
 # + Step 2.1.1: Link files nc metereological
 
-# TODO: Chech files febore to delete
+# Delete previous files
 rm $mhminputdir/*.nc 
 
 #ln -s $edkoutdir/pre_small.nc $mhminputdir/pre.nc
@@ -282,7 +270,7 @@ rm $mhminputdir/*.nc
 #ln -s $edkoutdir/tmax_small.nc $mhminputdir/tmax.nc
 #ln -s $edkoutdir/tavg_small.nc $mhminputdir/tavg.nc
 
-# TODO: Delete, output edk 1980-2018. How to optimize when you have a daily data?
+# TODO: TEST Delete, output edk 1980-2018. How to optimize when you have a daily data?
 era5demo=/home/utpl/sawam/apps/mhm/setup/02_input/meteo/ERA5_SD_EDK
 ln -s $era5demo"/pre_edk_1980to2018_small.nc" $mhminputdir"/pre.nc"
 ln -s $era5demo"/tmin_edk_1980to2018_small.nc" $mhminputdir"/tmin.nc"
