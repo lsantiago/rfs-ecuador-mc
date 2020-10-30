@@ -200,6 +200,36 @@ smiexefile=$projpath"/templates/catamayo_chira/executables/smi/smi"
 
 # Step 1.1:     Update metereological input file
 
+# +------------------+                 +----------------------------------+ 
+# |                  |     retrieve    |                                  |
+# |   CDS Server     |--<--------------|  UTPL SERVER                     |
+# |   (ERA5 data)    |                 | ./download_meteo/catamayo_chira/ |
+# |                  |     download    |                   year-month-day |
+# |                  |------------->---|                                  |    
+# |                  |                 |                                  |
+# +------------------+                 +----------------------------------+
+
+opath=$projpath"/download_meteo/catamayo_chira/"$issueyear"-"$issuemonth"-"$issueday
+ofile_daily=$opath/$issueyear"-"$issuemonth"-"$issueday"_daily.nc"
+ofile_hourly=$opath/$issueyear"-"$issuemonth"-"$issueday"_hourly.nc"
+
+# Create directory to opath
+if [ ! -d ${opath} ]; then
+	mkdir -p $opath
+fi
+
+# Request era5 data
+python3 $projpath/scripts/rfs-ecuador-mc/download_era5.py $issueyear $issuemonth $issueday $ofile_hourly
+
+
+# Mean of the day era5 data
+# TODO: check correct metod
+# cdo daymean $ofile_hourly @ofile_daily
+cdo daysum -shifttime,-1hour $ofile_hourly $ofile_daily
+
+exit
+
+
 # Step 1.2:     Update processing period and get pre.nc
 ##========= Variable vectors ================
 typemeteo=("pre" "tmin" "tmax" "tavg")
@@ -209,7 +239,7 @@ echo "================================================"
 echo "issue:   " $issueyear $issuemonth $issueday
 echo "================================================"
 
-# Step 1.2:     Update processing period and get pre.nc
+# Step 1.3:    Run EDK
 # Create dinamic folder to control edk
 ctrlfolder_edk=$projpath/execute_edk/catamayo_chira/$issueyear-$issuemonth-$issueday/control/
 if [ ! -d ${ctrlfolder_edk} ]; then
