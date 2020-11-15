@@ -69,7 +69,10 @@
 #
 # Pallav Shrestha 		24 Apr 2020 - added model chain script description
 # Pallav Shrestha 		24 Apr 2020 - added rfs folder structure reference
-#
+# Santiago Quiñones     23 Sep 2020 - register changes to configuration to run EDK
+# Santiago Quiñones     24 Sep 2020 - register changes to integration EDK and MHM
+# Santiago Quiñones     25 Sep 2020 - add configuration to run SMI
+# Santiago Quiñones     08 Oct 2020 - add download ERA5 data 
 #=======================================================================
 
 #---------------
