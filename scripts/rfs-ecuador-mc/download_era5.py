@@ -21,13 +21,13 @@ ofile_hourly = info[4]
 c = cdsapi.Client()
 r = c.retrieve(
     'reanalysis-era5-single-levels', {
-            'variable'    : ['2m_temperature', 'maximum_2m_temperature_since_previous_post_processing', 'minimum_2m_temperature_since_previous_post_processing', 'surface_solar_radiation', 'total_precipitation',],
+            'variable'    : ['total_precipitation', '2m_temperature', 'minimum_2m_temperature_since_previous_post_processing', 'maximum_2m_temperature_since_previous_post_processing', 'surface_solar_radiation',],
             'product_type': 'reanalysis',
             'year'        : year_isue,
             'month'       : month_isue,
             'day'         : day_isue,
-            "area": "-3.5/-81.5/-5.5/-79",
-            'grid': "0.25/0.25",
+            'area': "-2.05/-81.95/-6.95/-78.05",
+            'grid': "0.1/0.1", # los datos proporcionados por UFZ están bajo está resolución
             'time'        : [
                 '00:00','01:00','02:00',
                 '03:00','04:00','05:00',

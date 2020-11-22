@@ -168,9 +168,14 @@
 #issueday=$(date +'%d')		# 2 digit day
 
 # TODO: Delete, this is a example
-issueyear=2011         # 4 digit year                                      │
+#issueyear=2011         # 4 digit year                                      │
+#issuemonth=01        # 2 digit month                                     │
+#issueday=02          # 2 digit day
+
+issueyear=2019         # 4 digit year                                      │
 issuemonth=01        # 2 digit month                                     │
-issueday=02          # 2 digit day
+issueday=01          # 2 digit day
+
 
 # Yesteday date
 #yester_year=$(date --date="-1 day" +'%Y')
@@ -213,28 +218,104 @@ smiexefile=$projpath"/templates/catamayo_chira/executables/smi/smi"
 # |                  |                 |                                  |
 # +------------------+                 +----------------------------------+
 
+
+# Step 1.1.1:     Set dowload directories 
 opath=$projpath"/download_meteo/catamayo_chira/"$issueyear"-"$issuemonth"-"$issueday
-ofile_daily=$opath/$issueyear"-"$issuemonth"-"$issueday"_daily.nc"
-ofile_hourly=$opath/$issueyear"-"$issuemonth"-"$issueday"_hourly.nc"
+ofile_daily=$opath/$issueyear"-"$issuemonth"-"$issueday"_daily"
+ofile_hourly=$opath/$issueyear"-"$issuemonth"-"$issueday"_hourly"
 
 # Create directory to opath
 if [ ! -d ${opath} ]; then
 	mkdir -p $opath
 fi
 
-# Request era5 data
-python3 $projpath/scripts/rfs-ecuador-mc/download_era5.py $issueyear $issuemonth $issueday $ofile_hourly
+# Step 1.1.2:     Request era5 data
+python3 $projpath/scripts/rfs-ecuador-mc/download_era5.py $issueyear $issuemonth $issueday $ofile_hourly".nc"
 
 
-# Mean of the day era5 data
+
+# Step 1.1.3:     Rename variables
+#TODO: check variables
+# UTPL ERA 5(tp=pre, t2m=tavg, mn2t=tmin, mx2t=tmax, ssr=ssrd)
+# 			tp: Total precipitation
+#			t2m: 2 metre temperature          
+#			mn2t: Minimum temperature at 2 metres since previous post-processing
+#			mx2t: Maximum temperature at 2 metres since previous post-processing
+#			ssr: Surface net solar radiation
+
+# UFZ ERA 5(tp=pre, t2m=tavg, t2min=tmin, t2max=tmax, ssrd=ssrd)
+
+# cdo chname,PMSL,slp,U,u10,V,v10 ifile ofile
+cdo chname,tp,pre,t2m,tavg,mn2t,tmin,mx2t,tmax,ssr,ssrd,longitude,lon,latitude,lat $ofile_hourly".nc" $ofile_hourly"_temp1.nc"
+
+
+
+# Step 1.1.4:  Set a new Missing_value / Fill_value:
+#TODO: Check, the UFZ ERA5 is -9999.f, not -9999.s 
+cdo -setmissval,-9999.0 -setmissval,nan $ofile_hourly"_temp1.nc" $ofile_hourly"_temp2.nc"
+
+
+
+# Step 1.1.5:     Change units of measurement
+cdo -f nc4c -z zip_4 -expr,'pre=pre*1000;tavg=tavg-273.16;tmin=tmin-273.16;tmax=tmax-273.16;ssrd=ssrd' $ofile_hourly"_temp2.nc" $ofile_hourly"_temp3.nc"
+# cdo -f nc -expr,'P=1013.25*exp((-1)*(1.602769777072154)*log((exp(topo/10000.0)*213.15+75.0)/288.15));T=213.0+75.0*exp((-1)*topo/10000.0)-273.15' -setrtomiss,-100000,-0.0001 -topo out.nc
+# cdo expr , ’ var1=a p rl+ap rc ; var2=t s −2 7 3. 1 5; ’ i f i l e o f i l e
+
+# Step 1.1.6	  Fix latlon 
+# TODO: check output
+cdo sellonlatbox,-81.5,-79,-5.5,-3.5 $ofile_hourly"_temp3.nc" $ofile_hourly"_temp4.nc"
+
+# Step 1.1.7:     Mean of the day era5 data
 # TODO: check correct metod
 # cdo daymean $ofile_hourly @ofile_daily
-cdo daysum -shifttime,-1hour $ofile_hourly $ofile_daily
+# cdo daysum -shifttime,-1hour $ofile_hourly $ofile_daily
+cdo timmean $ofile_hourly"_temp4.nc" $ofile_daily"_temp1.nc"
+cdo -setattribute,pre@units="mm/day",ssrd@units="W m-2" $ofile_daily"_temp1.nc" $ofile_daily"_temp2.nc"
+cdo -settime,00:00:00 $ofile_daily"_temp2.nc" $ofile_daily".nc"
+
+
+# Step 1.1.8:     Separate data
+cdo -select,name=pre	$ofile_daily".nc"  $ofile_daily"_pre.nc"
+cdo -select,name=tavg	$ofile_daily".nc"  $ofile_daily"_tavg.nc"
+cdo -select,name=tmin	$ofile_daily".nc"  $ofile_daily"_tmin.nc"
+cdo -select,name=tmax	$ofile_daily".nc"  $ofile_daily"_tmax.nc"
+cdo -select,name=ssrd	$ofile_daily".nc"  $ofile_daily"_ssrd.nc"
+
+# Step 1.1.8:     Add EDM, Merge data pre, tavg, tmin, tmax with dem_0p1.nc
+#dem_path=$projpath/templates/catamayo_chira/dem
+#cdo merge $dem_path"/dem_0p1.nc" $ofile_daily"_pre.nc"  $ofile_daily"_pre_merged.nc"
+#cdo merge $dem_path"/dem_0p1.nc" $ofile_daily"_tavg.nc"  $ofile_daily"_tavg_merged.nc"
+#cdo merge $dem_path"/dem_0p1.nc" $ofile_daily"_tmin.nc"  $ofile_daily"_tmin_merged.nc"
+#cdo merge $dem_path"/dem_0p1.nc" $ofile_daily"_tmax.nc"  $ofile_daily"_tmax_merged.nc"
+#cdo merge $dem_path"/dem_0p1.nc" $ofile_daily"_ssrd.nc"  $ofile_daily"_ssrd_merged.nc"
+
+
+
+# Step 1.1.8:     Fix LatLon
+#Rscript "clear.R"
+#Rscript "latlon2northeast.R" $opath $ofile_daily"_pre_merged.nc" "pre"
+#Rscript "clear.R"
+#Rscript "latlon2northeast.R" $opath $ofile_daily"_tavg_merged.nc" "tavg"
+#Rscript "clear.R"
+#Rscript "latlon2northeast.R" $opath $ofile_daily"_tmin_merged.nc" "tmin"
+#Rscript "clear.R"
+#Rscript "latlon2northeast.R" $opath $ofile_daily"_tmax_merged.nc" "tmax"
+#Rscript "clear.R"
+#Rscript "latlon2northeast.R" $opath $ofile_daily"_ssrd_merged.nc" "ssrd"
+
+
+
 
 exit
 
+# Step 1.1.10:     Merge with historical data
+cdo merge historical_pre.nc  $ofile_daily"_pre.nc"
+cdo merge historical_tmin.nc  $ofile_daily"_tmin.nc"
+cdo merge historical_tmax.nc  $ofile_daily"_tmax.nc"
+cdo merge historical_tavg.nc  $ofile_daily"_tavg.nc"
 
-# Step 1.2:     Update processing period and get pre.nc
+
+# Step 1.2:     Update processing period and get new files pre.nc, tmin.nc, tmax.nc, tavg.nc
 ##========= Variable vectors ================
 typemeteo=("pre" "tmin" "tmax" "tavg")
 
