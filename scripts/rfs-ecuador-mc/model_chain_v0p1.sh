@@ -257,12 +257,13 @@ cdo -setmissval,-9999.0 -setmissval,nan $ofile_hourly"_temp1.nc" $ofile_hourly"_
 
 
 # Step 1.1.5:     Change units of measurement
-cdo -f nc4c -z zip_4 -expr,'pre=pre*1000;tavg=tavg-273.16;tmin=tmin-273.16;tmax=tmax-273.16;ssrd=ssrd' $ofile_hourly"_temp2.nc" $ofile_hourly"_temp3.nc"
+cdo zip_4 -expr,'pre=pre*1000;tavg=tavg-273.16;tmin=tmin-273.16;tmax=tmax-273.16;ssrd=ssrd' $ofile_hourly"_temp2.nc" $ofile_hourly"_temp3.nc"
+# TODO: Recomiendan trabajar sin compresión
+#cdo -f nc4c -z zip_4 -expr,'pre=pre*1000;tavg=tavg-273.16;tmin=tmin-273.16;tmax=tmax-273.16;ssrd=ssrd' $ofile_hourly"_temp2.nc" $ofile_hourly"_temp3.nc"
 # cdo -f nc -expr,'P=1013.25*exp((-1)*(1.602769777072154)*log((exp(topo/10000.0)*213.15+75.0)/288.15));T=213.0+75.0*exp((-1)*topo/10000.0)-273.15' -setrtomiss,-100000,-0.0001 -topo out.nc
 # cdo expr , ’ var1=a p rl+ap rc ; var2=t s −2 7 3. 1 5; ’ i f i l e o f i l e
 
 # Step 1.1.6	  Fix latlon 
-# TODO: check output
 cdo sellonlatbox,-81.5,-79,-5.5,-3.5 $ofile_hourly"_temp3.nc" $ofile_hourly"_temp4.nc"
 
 # Step 1.1.7:     Mean of the day era5 data
@@ -270,49 +271,29 @@ cdo sellonlatbox,-81.5,-79,-5.5,-3.5 $ofile_hourly"_temp3.nc" $ofile_hourly"_tem
 # cdo daymean $ofile_hourly @ofile_daily
 # cdo daysum -shifttime,-1hour $ofile_hourly $ofile_daily
 cdo timmean $ofile_hourly"_temp4.nc" $ofile_daily"_temp1.nc"
-cdo -setattribute,pre@units="mm/day",ssrd@units="W m-2" $ofile_daily"_temp1.nc" $ofile_daily"_temp2.nc"
+cdo -setattribute,pre@units="mm/day",ssrd@units="W m-2",tmin@units="C",tmax@units="C",tavg@units="C" $ofile_daily"_temp1.nc" $ofile_daily"_temp2.nc"
+#cdo -setattribute,pre@units="mm/day",ssrd@units="W m-2" $ofile_daily"_temp1.nc" $ofile_daily"_temp2.nc"
 cdo -settime,00:00:00 $ofile_daily"_temp2.nc" $ofile_daily".nc"
 
+# Step 1.1.8      Merge data
+#cdo mergetime $ofile_daily".nc" ~/era5data/full20x25.nc "~/era5data/update_full20x25_"$issueyear$issuemonth$issueday".nc"
+cdo mergetime $ofile_daily".nc" ~/era5data/full20x25.nc ~/era5data/updatefull20x25.nc
 
-# Step 1.1.8:     Separate data
-cdo -select,name=pre	$ofile_daily".nc"  $ofile_daily"_pre.nc"
-cdo -select,name=tavg	$ofile_daily".nc"  $ofile_daily"_tavg.nc"
-cdo -select,name=tmin	$ofile_daily".nc"  $ofile_daily"_tmin.nc"
-cdo -select,name=tmax	$ofile_daily".nc"  $ofile_daily"_tmax.nc"
-cdo -select,name=ssrd	$ofile_daily".nc"  $ofile_daily"_ssrd.nc"
+# Step 1.1.8:     Split data 
+cdo -select,name=pre	~/era5data/updatefull20x25.nc   ~/era5data/pre_temp.nc
+cdo -select,name=tavg	~/era5data/updatefull20x25.nc   ~/era5data/tavg_temp.nc
+cdo -select,name=tmin	~/era5data/updatefull20x25.nc   ~/era5data/tmin_temp.nc
+cdo -select,name=tmax	~/era5data/updatefull20x25.nc   ~/era5data/tmax_temp.nc
+cdo -select,name=ssrd	~/era5data/updatefull20x25.nc   ~/era5data/ssrd_temp.nc
 
 # Step 1.1.8:     Add EDM, Merge data pre, tavg, tmin, tmax with dem_0p1.nc
-#dem_path=$projpath/templates/catamayo_chira/dem
-#cdo merge $dem_path"/dem_0p1.nc" $ofile_daily"_pre.nc"  $ofile_daily"_pre_merged.nc"
-#cdo merge $dem_path"/dem_0p1.nc" $ofile_daily"_tavg.nc"  $ofile_daily"_tavg_merged.nc"
-#cdo merge $dem_path"/dem_0p1.nc" $ofile_daily"_tmin.nc"  $ofile_daily"_tmin_merged.nc"
-#cdo merge $dem_path"/dem_0p1.nc" $ofile_daily"_tmax.nc"  $ofile_daily"_tmax_merged.nc"
-#cdo merge $dem_path"/dem_0p1.nc" $ofile_daily"_ssrd.nc"  $ofile_daily"_ssrd_merged.nc"
-
-
-
-# Step 1.1.8:     Fix LatLon
-#Rscript "clear.R"
-#Rscript "latlon2northeast.R" $opath $ofile_daily"_pre_merged.nc" "pre"
-#Rscript "clear.R"
-#Rscript "latlon2northeast.R" $opath $ofile_daily"_tavg_merged.nc" "tavg"
-#Rscript "clear.R"
-#Rscript "latlon2northeast.R" $opath $ofile_daily"_tmin_merged.nc" "tmin"
-#Rscript "clear.R"
-#Rscript "latlon2northeast.R" $opath $ofile_daily"_tmax_merged.nc" "tmax"
-#Rscript "clear.R"
-#Rscript "latlon2northeast.R" $opath $ofile_daily"_ssrd_merged.nc" "ssrd"
-
-
-
-
-exit
-
-# Step 1.1.10:     Merge with historical data
-cdo merge historical_pre.nc  $ofile_daily"_pre.nc"
-cdo merge historical_tmin.nc  $ofile_daily"_tmin.nc"
-cdo merge historical_tmax.nc  $ofile_daily"_tmax.nc"
-cdo merge historical_tavg.nc  $ofile_daily"_tavg.nc"
+dem_path=$projpath/templates/catamayo_chira/dem
+# TODO: Revisar las unidad de los valores full
+cdo merge $dem_path"/dem_0p1.nc" ~/era5data/pre_temp.nc   ~/era5data/pre.nc
+cdo merge $dem_path"/dem_0p1.nc" ~/era5data/tavg_temp.nc  ~/era5data/tavg.nc
+cdo merge $dem_path"/dem_0p1.nc" ~/era5data/tmin_temp.nc  ~/era5data/tmin.nc
+cdo merge $dem_path"/dem_0p1.nc" ~/era5data/tmax_temp.nc  ~/era5data/tmax.nc
+cdo merge $dem_path"/dem_0p1.nc" ~/era5data/ssrd_temp.nc  ~/era5data/ssrd.nc
 
 
 # Step 1.2:     Update processing period and get new files pre.nc, tmin.nc, tmax.nc, tavg.nc
