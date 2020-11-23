@@ -39,17 +39,18 @@
 
 AUTHORS: 
 
-	Santiago Quiñones
+	>> Santiago Quiñones
+	>> Fernando Oñate
 	Universidad Técnica Particular de Loja
 	Water Resources Section
 	Ecuador	
 --------------------------------------------------
-	Pallav Kumar Shrestha
+	>> Pallav Kumar Shrestha
 	Computational Hydrosystems
 	Helmholtz Centre for Environmental Research - UFZ
 	Germany	
 --------------------------------------------------
-	Luis Samaniego
+	>> Luis Samaniego
 	Computational Hydrosystems
 	Helmholtz Centre for Environmental Research - UFZ
 	Germany
