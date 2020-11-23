@@ -6,14 +6,14 @@
 ! DataPathIn contains the path to the meteorological input files
 ! it can be a netcdf file, then a 3-dim field is expected and
 ! further coordinate and variable names are expected
-DataPathIn               = "/home/utpl/sawam/data/era5/add-dem/add-latlong/with_fix_name/pre.nc"
+DataPathIn               = "/home/utpl/era5data/pre.nc"
 !
 ! value in the meteorological input files that is used as missing value
 noDataValue              = -9999
 ! Specifications of variable and coordinate names in case DataPathIn
 ! is a netcdf file
 ncIn_variable_name       = "pre"
-ncIn_dem_variable_name   = "dem"
+ncIn_dem_variable_name   = "dem_0p1"
 ! name of coordinates, these must be in [m]
 ncIn_yCoord_name         = "northing"
 ncIn_xCoord_name         = "easting"

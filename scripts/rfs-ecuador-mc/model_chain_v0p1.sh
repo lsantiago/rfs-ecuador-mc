@@ -229,6 +229,7 @@ if [ ! -d ${opath} ]; then
 	mkdir -p $opath
 fi
 
+
 # Step 1.1.2:     Request era5 data
 python3 $projpath/scripts/rfs-ecuador-mc/download_era5.py $issueyear $issuemonth $issueday $ofile_hourly".nc"
 
@@ -275,9 +276,23 @@ cdo -setattribute,pre@units="mm/day",ssrd@units="W m-2",tmin@units="C",tmax@unit
 #cdo -setattribute,pre@units="mm/day",ssrd@units="W m-2" $ofile_daily"_temp1.nc" $ofile_daily"_temp2.nc"
 cdo -settime,00:00:00 $ofile_daily"_temp2.nc" $ofile_daily".nc"
 
+# Clear data
+rm -f ~/era5data/updatefull20x25.nc
+rm -f ~/era5data/*_temp.nc
+rm -f ~/era5data/pre.nc
+rm -f ~/era5data/tmin.nc
+rm -f ~/era5data/tavg.nc
+rm -f ~/era5data/tmax.nc
+rm -f ~/era5data/tavg.nc
+rm -f ~/era5data/ssrd.nc
+
+
+
 # Step 1.1.8      Merge data
 #cdo mergetime $ofile_daily".nc" ~/era5data/full20x25.nc "~/era5data/update_full20x25_"$issueyear$issuemonth$issueday".nc"
 cdo mergetime $ofile_daily".nc" ~/era5data/full20x25.nc ~/era5data/updatefull20x25.nc
+
+
 
 # Step 1.1.8:     Split data 
 cdo -select,name=pre	~/era5data/updatefull20x25.nc   ~/era5data/pre_temp.nc
@@ -288,17 +303,21 @@ cdo -select,name=ssrd	~/era5data/updatefull20x25.nc   ~/era5data/ssrd_temp.nc
 
 # Step 1.1.8:     Add EDM, Merge data pre, tavg, tmin, tmax with dem_0p1.nc
 dem_path=$projpath/templates/catamayo_chira/dem
-# TODO: Revisar las unidad de los valores full
 cdo merge $dem_path"/dem_0p1.nc" ~/era5data/pre_temp.nc   ~/era5data/pre.nc
 cdo merge $dem_path"/dem_0p1.nc" ~/era5data/tavg_temp.nc  ~/era5data/tavg.nc
 cdo merge $dem_path"/dem_0p1.nc" ~/era5data/tmin_temp.nc  ~/era5data/tmin.nc
 cdo merge $dem_path"/dem_0p1.nc" ~/era5data/tmax_temp.nc  ~/era5data/tmax.nc
 cdo merge $dem_path"/dem_0p1.nc" ~/era5data/ssrd_temp.nc  ~/era5data/ssrd.nc
 
+# Clear data
+# Update data to next iteration
+# TODO: ENABLE IN SECOND DAY
+#cp ~/era5data/updatefull20x25.nc ~/era5data/full20x25.nc
+
 
 # Step 1.2:     Update processing period and get new files pre.nc, tmin.nc, tmax.nc, tavg.nc
 ##========= Variable vectors ================
-typemeteo=("pre" "tmin" "tmax" "tavg")
+typemeteo=("pre" "tmin" "tmax" "tavg") 
 
 
 echo "================================================"
@@ -334,8 +353,9 @@ for itypemeteo in "${!typemeteo[@]}" ; do
     #time ./edk > ./runlog.txt
     #./edk
 
-    #cdo -f nc4c -z zip_4 copy ../output/${typemeteo[itypemeteo]}.nc ../output/${typemeteo[itypemeteo]}_small.nc
+    #cdo -f nc4c -z zip_4 copy ../output/${typemeteo[itypemeteo]}.nc ../output/${typemeteo[itypemeteo]}_edk_small.nc
 done
+
 
 
 #=======================================================================
@@ -355,23 +375,22 @@ if [ ! -d ${execute_mhm_dir} ]; then
 	mkdir -p $execute_mhm_dir"/restart/t2"
 fi
 
-
 # + Step 2.1.1: Link files nc metereological
 
 # Delete previous files
 rm $mhminputdir/*.nc 
 
-#ln -s $edkoutdir/pre_small.nc $mhminputdir/pre.nc
-#ln -s $edkoutdir/tmin_small.nc $mhminputdir/tmin.nc
-#ln -s $edkoutdir/tmax_small.nc $mhminputdir/tmax.nc
-#ln -s $edkoutdir/tavg_small.nc $mhminputdir/tavg.nc
+ln -s $edkoutdir/pre_edk_small.nc $mhminputdir/pre.nc
+ln -s $edkoutdir/tmin_edk_small.nc $mhminputdir/tmin.nc
+ln -s $edkoutdir/tmax_edk_small.nc $mhminputdir/tmax.nc
+ln -s $edkoutdir/tavg_edk_small.nc $mhminputdir/tavg.nc
 
 # TODO: TEST Delete, output edk 1980-2018. How to optimize when you have a daily data?
-era5demo=/home/utpl/sawam/apps/mhm/setup/02_input/meteo/ERA5_SD_EDK
-ln -s $era5demo"/pre_edk_1980to2018_small.nc" $mhminputdir"/pre.nc"
-ln -s $era5demo"/tmin_edk_1980to2018_small.nc" $mhminputdir"/tmin.nc"
-ln -s $era5demo"/tmax_edk_1980to2018_small.nc" $mhminputdir"/tmax.nc"
-ln -s $era5demo"/tavg_edk_1980to2018_small.nc" $mhminputdir"/tavg.nc"
+#era5demo=/home/utpl/sawam/apps/mhm/setup/02_input/meteo/ERA5_SD_EDK
+#ln -s $era5demo"/pre_edk_1980to2018_small.nc" $mhminputdir"/pre.nc"
+#ln -s $era5demo"/tmin_edk_1980to2018_small.nc" $mhminputdir"/tmin.nc"
+#ln -s $era5demo"/tmax_edk_1980to2018_small.nc" $mhminputdir"/tmax.nc"
+#ln -s $era5demo"/tavg_edk_1980to2018_small.nc" $mhminputdir"/tavg.nc"
 
 
 # + Step 2.1.2: Copy templates
@@ -398,10 +417,8 @@ sed -i -e  "/mEnd/c eval_Per(1)%mEnd=$issuemonth" mhm.nml
 sed -i -e  "/dEnd/c eval_Per(1)%dEnd=$issueday" mhm.nml
 
 
-
 # + Step 2.3:   RUN MHM
 ./mhm
-
 
 #=======================================================================
 # 3 SMI
@@ -422,7 +439,7 @@ cp $projpath/templates/catamayo_chira/smi_cdf/cdf_info_1981_2010.nc $execute_smi
 # + Step 3.1.3: Copy mHMH_fluxes output
 cp $execute_mhm_dir/output/mHM_Fluxes_States.nc $execute_smi_dir/control/
 
-# + Step 3.1.3: Create symbolic link to mhm executable
+# + Step 3.1.3: Create symbolic link to smi executable
 if [ -f $execute_smi_dir/control/smi ]; then
     rm $execute_smi_dir/control/smi # remove any pre-exisintg links
 fi
@@ -432,6 +449,10 @@ ln -s $smiexefile $execute_smi_dir/control
 # + Step 3.1.4	: Run SMI
 cd $execute_smi_dir/control
 ./smi
+
+
+
+
 
 
 
