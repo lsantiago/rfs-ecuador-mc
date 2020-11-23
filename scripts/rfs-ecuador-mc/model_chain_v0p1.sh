@@ -73,6 +73,7 @@
 # Santiago Quiñones		24 Sep 2020 - register changes to integration EDK and MHM
 # Santiago Quiñones		25 Sep 2020 - add configuration to run SMI
 # Santiago Quiñones		08 Oct 2020 - add download ERA5 data 
+# Santiago Quiñones		23 Nov 2020 - integrate daily data with EDK, MHM, SMI
 #
 #=======================================================================
 
