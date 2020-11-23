@@ -8,7 +8,7 @@ setup_mhm/catamayo_chira/*
 ._*
 
 # internal conf
-.vscode/*
+.vscode/
 
 # execute files
 execute_mhm/*
@@ -24,3 +24,4 @@ temp/*
 
 # private vars
 private_vars_download.sh
+
